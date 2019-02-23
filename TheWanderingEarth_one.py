@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 import random
 import requests
 requests.packages.urllib3.disable_warnings()
-from lxml import etree
 import time
 import pandas as pd
 import re
@@ -25,7 +24,8 @@ def get_html(url,start):
         'status':'P',
     }
     #https://movie.douban.com/subject/26266893/comments?start=20&limit=20&sort=new_score&status=P
-
+    starts=[]
+    _eval=[]
     nickname=[]
     link=[]
     img_link=[]
@@ -33,7 +33,8 @@ def get_html(url,start):
     comments_time=[]
     comments=[]
     while(start<2000):
-        print("开始爬取第{}条评论".format(start))
+        time.sleep(random.randint(0,10))
+        
         response = requests.get(url,headers=headers, verify=False,params=data,timeout=10).text
         soup = BeautifulSoup(response, "lxml")
         for comment in soup.find_all('div',class_="comment-item"):
@@ -47,8 +48,13 @@ def get_html(url,start):
             votes.append(com.find('span',class_="votes").get_text()) #get_text()==.string
             comments_time.append(com.find('span',class_="comment-time").get_text())
             comments.append(com.find('span',class_="short").string) #get_text()
+
+            com_span=com.find('span',class_="comment-info")
+            starts.append(re.findall(r'<span class="allstar(.+) rating" title=".+"></span>',str(com_span),re.S)[0])
+            _eval.append(re.findall(r'<span class=".+" title="(.+)"></span>',str(com_span),re.S)[0])
+            
         start+=20
-        time.sleep(random.randint(0,10))
+        print("开始爬取第{}条评论".format(start))
     comment_dict={'nickname':nickname,
                   'link':link,
                   'img_link':img_link,
