@@ -71,7 +71,7 @@ def main():
     url =url_base+'/comments'
     print("开始爬取")
     comments=get_html(url,start)
-    name=['nickname','link','img_link','votes','comments_time','comments']
+    name=['nickname','link','img_link','start','eval','votes','comments_time','comments']
     print("开始写入文件!")
     comment=pd.DataFrame(columns=name,data=comments)
     #comment.head()
