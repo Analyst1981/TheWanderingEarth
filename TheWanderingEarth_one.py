@@ -10,6 +10,8 @@ requests.packages.urllib3.disable_warnings()
 import time
 import pandas as pd
 import re
+import pymysql
+from sqlalchemy import create_engine
 
 def get_html(url,start):
     headers = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36', 
@@ -23,6 +25,8 @@ def get_html(url,start):
         'sort':'new_score',
         'status':'P',
     }
+    engine = create_engine("mysql+pymysql://{}:{}@{}/{}?charset={}".format('root', 'toor', '127.0.0.1:3306', 'spiders','utf8mb4'))
+    con = engine.connect()
     #https://movie.douban.com/subject/26266893/comments?start=20&limit=20&sort=new_score&status=P
     starts=[]
     _eval=[]
@@ -52,17 +56,25 @@ def get_html(url,start):
             com_span=com.find('span',class_="comment-info")
             starts.append(re.findall(r'<span class="allstar(.+) rating" title=".+"></span>',str(com_span),re.S)[0])
             _eval.append(re.findall(r'<span class=".+" title="(.+)"></span>',str(com_span),re.S)[0])
-            
+        comment_dict={'nickname':nickname,
+                      'link':link,
+                      'img_link':img_link,
+                      'starts':starts,
+                    '_eval':_eval,
+                    'votes':votes,   
+                    'comments_time':comments_time,
+                    'comments':comments,
+                    } 
+        comment_item=pd.DataFrame(data=comment_dict)   
+        print("开始写入文件!")
+        try:
+            comment_item.to_sql(name='TestComment', con=con, if_exists='append', index=False)
+        except Exception as e :
+            print(e.args)
+            print('Failed')    
         start+=20
         print("开始爬取第{}条评论".format(start))
-    comment_dict={'nickname':nickname,
-                  'link':link,
-                  'img_link':img_link,
-                  'votes':votes,   
-                  'comments_time':comments_time,
-                  'comments':comments,
-                  }
-    return comment_dict
+    
 def main():
     start_time = time.time()  # 结束时间
     url_base='https://movie.douban.com/subject/26266893/'
@@ -70,12 +82,15 @@ def main():
     start=0
     url =url_base+'/comments'
     print("开始爬取")
+    get_html(url,start)
+    """
     comments=get_html(url,start)
     name=['nickname','link','img_link','start','eval','votes','comments_time','comments']
     print("开始写入文件!")
     comment=pd.DataFrame(columns=name,data=comments)
     #comment.head()
     comment.to_csv(r'liulang.csv',encoding='utf_8_sig')
+    """
     print("--------------")
     end_time = time.time()  # 结束时间
     print("程序耗时%f秒." % (end_time - start_time))
