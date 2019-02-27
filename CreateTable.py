@@ -27,9 +27,9 @@ sql = """CREATE TABLE TestComment(
           _eval VARCHAR(1024) DEFAULT NULL COMMENT '推荐度',
           votes VARCHAR(1024) DEFAULT NULL COMMENT '认可度',
           comments_time VARCHAR(1024) DEFAULT NULL COMMENT '评论时间',
-          comments VARCHAR(10000) DEFAULT NULL COMMENT '评论',
+          comments VARCHAR(5000) DEFAULT NULL COMMENT '评论',
           createtime DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间'
-          )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='测试评论表';"""
+          )ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='测试评论表';"""
 
 try:
     cursor.execute(sql)
@@ -41,3 +41,8 @@ except:
 
 db.close()
 print('数据库已关闭')
+
+"""
+将已经建好的表也转换成utf8mb4
+命令：mysql>alter table TABLE_NAMEconvert to character set utf8mb4 collate utf8mb4_bin; （将TABLE_NAME替换成你的表名）
+"""
